@@ -1,5 +1,5 @@
 # f4mproxy
-f4mproxy for XC PRO addon stremio
+f4mproxy para XC PRO addon stremio
 
 Tutorial:
 
