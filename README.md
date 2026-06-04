@@ -1,6 +1,8 @@
 # f4mproxy
 f4mproxy para XC PRO addon stremio
 
+finalidade do f4mproxy: manter varios usuarios numa mesma lista xc ou apenas pra dividir conta
+
 Tutorial:
 
 1 - baixe o qpython+ no android
