@@ -17,11 +17,12 @@ import zlib
 
 # ==================== CONFIGURAÇÕES ====================
 PROXY_PORT = 9090
-CACHE_DURATION_SECONDS = 5
+CACHE_DURATION_SECONDS = 3
 CACHE_MAX_CHUNKS = 250
 MAX_RETRIES = 7
 RETRY_DELAY = 0.5
 BUFFER_SIZE = 32768
+AOVIVO_M3U8 = True
 
 CHROME_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -330,6 +331,13 @@ class UnifiedProxy:
         return None, 0, None
 
     def rewrite_m3u8_urls(self, playlist_content, base_url, proxy_host):
+        try:
+            #TARGET_DURATION = re.findall(r'#EXT-X-TARGETDURATION:(.*?)\n', playlist_content)[0]
+            segments_number = int(playlist_content.count('/hl'))
+            NEXT_SEGMENT = segments_number * 2
+            ENABLE_AOVIVO = True
+        except:
+            ENABLE_AOVIVO = False
         def replace_url(match):
             segment = match.group(0).strip()
             if segment.startswith('#') or not segment:
@@ -337,6 +345,18 @@ class UnifiedProxy:
             try:
                 absolute = urljoin(base_url + '/', segment)
                 if absolute.endswith('.ts') or absolute.endswith('.m3u8') or '/hl' in absolute.lower() or 'track' in absolute.lower():
+                    # GARANTIR AOVIVO
+                    if AOVIVO_M3U8 and '/hl' in absolute and '.ts' in absolute and ENABLE_AOVIVO:
+                        try:
+                            atual_ts = '_' + re.findall(r'_(.*?).ts', absolute)[0] + '.ts'
+                            new_ts = '_' + str(int(re.findall(r'_(.*?).ts', absolute)[0]) + NEXT_SEGMENT) + '.ts'
+                            # print('segmento atual: ', atual_ts)
+                            # print('novo segmento: ', new_ts)
+                            new_absolute = absolute.replace(atual_ts, new_ts)
+                            return f"http://{proxy_host}/tsdownloader?url={quote(new_absolute)}"
+                        except:
+                            pass
+
                     return f"http://{proxy_host}/tsdownloader?url={quote(absolute)}"
                 return segment
             except:
